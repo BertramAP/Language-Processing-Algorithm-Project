@@ -1,6 +1,7 @@
 import tensorflow as tf
 from tensorflow.python.keras import Model
 from tensorflow.python.keras.layers import Dense, LSTM, Embedding
+import tensorflow_datasets as tfds
 
 class myModel(Model):
     def __init__(self):
@@ -37,7 +38,24 @@ def testModel(images, labels):
     test_loss(t_loss)
     test_accuracy(labels, predictions)
 
+
 if __name__ == '__main__':
+    ds = tfds.load(
+        'glue',
+        split="train",
+        try_gcs=True,
+    )
+    assert isinstance(ds, tf.data.Dataset)
+    ds = ds.take(1)
+
+    for example in ds:  # example is `{'image': tf.Tensor, 'label': tf.Tensor}`
+        print(list(example.keys()))
+        idx = example["idx"]
+        label = example["label"]
+        print(idx.shape, label)
+
+    #skal lave databehandling
+    """
     #Laver en instans af myModel
     model = myModel()
 
@@ -54,7 +72,7 @@ if __name__ == '__main__':
     test_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name='test_accuracy')
 
     EPOCHS = 5
-
+  
     for epoch in range(EPOCHS):
         #Nulstiller de målte værdier
         train_loss.reset_states()
@@ -75,4 +93,4 @@ if __name__ == '__main__':
             f'Accuracy: {train_accuracy.result() * 100}, '
             f'Test Loss: {test_loss.result()}, '
             f'Test Accuracy: {test_accuracy.result() * 100}'
-        )
+        )"""
