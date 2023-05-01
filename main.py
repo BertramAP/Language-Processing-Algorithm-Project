@@ -1,32 +1,24 @@
 import tensorflow as tf
 import numpy as np
-from tensorflow.python.keras import Model
-from tensorflow.python.keras.layers import Dense, LSTM, Embedding
-import tensorflow_datasets as tfds
+from tensorflow import keras
+from keras import Model
+from keras.models import Sequential, load_model
+from keras.layers import Dense, LSTM, Embedding, Activation
+from keras.optimizers import RMSprop
 from nltk.tokenize import RegexpTokenizer
-import string
+from tensorflow.python.client import device_lib
+print("TensorFlow version:", tf.__version__)
+print(device_lib.list_local_devices())
+print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
 
-path = 'data.txt'
-text = open(path, "r", encoding='utf-8').read().lower()
-print('length of the corpus is: :', len(text))
-# Tokineser ordende
-tokenizer = RegexpTokenizer(r"\w+")
-tokens = tokenizer.tokenize(text)
-# fjerner gentagende tokens
-unique_tokens = np.unique(tokens)
-# giver hver token en id, vha. en dictionary
-unique_token_index = {token: idx for idx, token in enumerate(unique_tokens)}
-# definer mængden af ord modellen skal bruge til at forudsige det næste
-n_words = 10
-input_words = []
-next_words = []
+"""
 class myModel(Model):
     def __init__(self):
         super(myModel, self).__init__()
         #Her bliver nn's lager defineret
         self.em = Embedding(input_dim=1000, output_dim=64)
-        self.lstm = LSTM(128, input_shape=(n_words, len(unique_tokens))
-        self.d = Dense(len(uniquetokens)))
+        self.lstm = LSTM(128, input_shape=(n_words, len(unique_tokens)))
+        self.d = Dense(len(unique_tokens))
 
     #Når model bliver kaldet, vil vi passerer dataen igennem lagerne
     def call(self, x):
@@ -57,28 +49,23 @@ def testModel(sentence, labels):
 
 def sanitize(sentence):
     return sentence.translate(str.maketrans('', '', string.punctuation)).lower()
-
+"""
 if __name__ == '__main__':
-    """ds_train, ds_test = tfds.load(
-        'glue',
-        split=["train", "test"],
-        try_gcs=True,
-    )
-    assert isinstance(ds_train, tf.data.Dataset)
-    print(np.size(ds_train))
-    ds_train = ds_train.shuffle(1024).batch(8551).prefetch(tf.data.AUTOTUNE)
-    j = 0
-    tokenizer = RegexpTokenizer(r"\w+")
+    n_words = 5
+    input_words = []
+    next_words = []
 
-    for i in ds_train:
-        sentence_train = i["sentence"]
-        words = tokenizer.tokenize(sentence_train.sample_string_tensor.numpy())
-        print(words)
-        print("j = ", j)
-        j+=1
-    for i in ds_train:
-        sentence_test =  i["sentence"]
-    """
+    path = 'data.txt'
+    text = open(path, "r", encoding='utf-8').read().lower()
+    print('length of the corpus is: :', len(text))
+    # Tokineser ordende
+    tokenizer = RegexpTokenizer(r"\w+")
+    tokens = tokenizer.tokenize(text)
+    # fjerner gentagende tokens
+    unique_tokens = np.unique(tokens)
+    # giver hver token en id, vha. en dictionary
+    unique_token_index = {token: idx for idx, token in enumerate(unique_tokens)}
+    # definer mængden af ord modellen skal bruge til at forudsige det næste
 
 
     for i in range(len(tokens)-n_words):
@@ -90,62 +77,19 @@ if __name__ == '__main__':
     y = np.zeros((len(next_words), len(unique_tokens)), dtype=bool)
     for i, words in enumerate(input_words):
         for j, word in enumerate(words):
-            x[i, j, unique_token_index[word]] =1
-        y[i, unique_token_index[word]] = 1
+            x[i, j, unique_token_index[word]] = 1
+        y[i, unique_token_index[next_words[i]]] = 1
 
-    #skal lave databehandling
-    #Laver en instans af myModel
-    model = myModel()
+    model = Sequential()
+    model.add(LSTM(128, input_shape=(n_words, len(unique_tokens))))
+    model.add(Dense(len(unique_tokens)))
+    model.add(Activation("softmax"))
+    model.compile(loss="categorical_crossentropy", optimizer=RMSprop(learning_rate=0.01), metrics=["accuracy"])
+    model.fit(x, y, batch_size=128, epochs=10, shuffle=True, validation_split=0.05)
 
-    #Sætter loss funktion til Sparse Cossentropy
-    loss_object = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True)
-    #Sætter optimizer til Adam
-    optimizer = tf.keras.optimizers.Adam()
+    #Gemmer modellen som en fil
+    model.save("Shelorck holmes model 1.h5")
 
-    #Definere værdier der skal måles for hver epoch
-    train_loss = tf.keras.metrics.Mean(name='train_loss')
-    train_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name='train_accuracy')
 
-    test_loss = tf.keras.metrics.Mean(name='test_loss')
-    test_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(name='test_accuracy')
 
-    EPOCHS = 5
-    """
-    
-    for epoch in range(EPOCHS):
-        #Nulstiller de målte værdier
-        train_loss.reset_states()
-        train_accuracy.reset_states()
-        test_loss.reset_states()
-        test_accuracy.reset_states()
-        for j in ds_train:
-            for sentence in j["sentence"]:
-                words = sentence.sample_string_tensor.numpy()
-                tokens = tokenizer.tokenize(words.lower())
-                for i in range(1, len(words) - 2):
-                    trainModel(words[0:i], words[i])
-        #Træner modellen (mangler data)
-        print(len(sentence_train))
-        for j in range(len(sentence_train)):
-            words = tf.strings.split(sentence_test)
-            for i in range(1, np.size(words)-2):
-                trainModel(words[0:i], words[i])
-        #Tester modelllen
-        for j in range(len(sentence_test)):
-            words = tf.strings.split(sentence_test)
-            for i in range(1, np.size(words) - 2):
-                trainModel(words[0:i], words[i])
-        for j in ds_test:
-            for sentence in j["sentence"]:
-                words = sentence.sample_string_tensor.numpy()
-                for i in range(1, np.size(words) - 2):
-                    trainModel(words[0:i], words[i])
 
-        print(
-            f'Epoch {epoch + 1}, '
-            f'Loss: {train_loss.result()}, '
-            f'Accuracy: {train_accuracy.result() * 100}, '
-            f'Test Loss: {test_loss.result()}, '
-            f'Test Accuracy: {test_accuracy.result() * 100}'
-        )
-                """
