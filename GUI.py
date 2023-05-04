@@ -1,6 +1,6 @@
 import sys
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QApplication, QFileDialog, QWidget, QGridLayout, QPushButton, QLabel, QTextEdit, QStackedWidget, QMainWindow, QToolBar
+from PyQt6.QtWidgets import QApplication, QFileDialog, QWidget, QGridLayout, QPushButton, QLabel, QTextEdit, QStackedWidget, QMainWindow, QMenuBar, QMenu
 
 
 class MainScreen(QMainWindow):
@@ -38,7 +38,9 @@ class MainScreen(QMainWindow):
         widget.setLayout(self.layout)
         self.setCentralWidget(widget)
 
-        self.open_file_dialog()
+        self.menubar = self.menuBar()
+        self.filemenu = self.menubar.addMenu("file")
+        self.filemenu.addAction("Vælg data", self.open_file_dialog)
 
     def ins_option_1(self):
         self.textArea.append(self.options[0])
