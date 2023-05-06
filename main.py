@@ -12,41 +12,6 @@ print(device_lib.list_local_devices())
 print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
 
 """
-class myModel(Model):
-    def __init__(self):
-        super(myModel, self).__init__()
-        #Her bliver nn's lager defineret
-        self.em = Embedding(input_dim=1000, output_dim=64)
-        self.lstm = LSTM(128, input_shape=(n_words, len(unique_tokens)))
-        self.d = Dense(len(unique_tokens))
-
-    #Når model bliver kaldet, vil vi passerer dataen igennem lagerne
-    def call(self, x):
-        self.em(x)
-        self.lstm(x)
-        return self.d(x)
-
-@tf.function
-def trainModel(sentence, labels):
-    with tf.GradientTape() as tape:
-        # training=True is only needed if there are layers with different
-        # behavior during training versus inference (e.g. Dropout).
-        predictions = model(sentence, training=True)
-        loss = loss_object(labels, predictions)
-    gradients = tape.gradient(loss, model.trainable_variables)
-    optimizer.apply_gradients(zip(gradients, model.trainable_variables))
-
-    train_loss(loss)
-    train_accuracy(labels, predictions)
-
-@tf.function
-def testModel(sentence, labels):
-    predictions = model(sentence, training=False)
-    t_loss = loss_object(labels, predictions)
-
-    test_loss(t_loss)
-    test_accuracy(labels, predictions)
-
 def sanitize(sentence):
     return sentence.translate(str.maketrans('', '', string.punctuation)).lower()
 """
