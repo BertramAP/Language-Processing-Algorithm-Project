@@ -4,9 +4,7 @@ from tensorflow import keras
 from keras import Model
 from keras.models import load_model, Sequential
 from keras.optimizers import RMSprop
-
 from keras.layers import Dense, LSTM, Embedding, Activation
-
 path = 'data.txt'
 text = open(path, "r", encoding='utf-8').read().lower()
 # Tokineser ordende
@@ -15,15 +13,16 @@ tokens = tokenizer.tokenize(text)
 # fjerner gentagende tokens
 unique_tokens = np.unique(tokens)
 unique_token_index = {token: idx for idx, token in enumerate(unique_tokens)}
+n_words = 5
 path = 'wonderland.txt'
 text = open(path, "r", encoding='utf-8').read().lower()
-n_words = 5
+
 def update_tokens(text):
     global unique_tokens, tokens, unique_token_index
     x_old_words = len(unique_tokens)
     newTokens = tokenizer.tokenize(text)
     unique_tokens = np.unique(tokens + newTokens)
-    tokens = newTokens
+    tokens = tokens
     unique_token_index = {token: idx for idx, token in enumerate(unique_tokens)}
     x_new_words = len(unique_tokens)
     print(x_old_words, x_new_words)

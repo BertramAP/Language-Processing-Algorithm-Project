@@ -20,7 +20,7 @@ if __name__ == '__main__':
     input_words = []
     next_words = []
 
-    path = 'data.txt'
+    path = 'wonderland.txt'
     text = open(path, "r", encoding='utf-8').read().lower()
     print('length of the corpus is: :', len(text))
     # Tokineser ordende
@@ -53,8 +53,7 @@ if __name__ == '__main__':
     model.fit(x, y, batch_size=128, epochs=10, shuffle=True, validation_split=0.05)
 
     #Gemmer modellen som en fil
-    model.save("Shelorck holmes model 1.h5")
-    model
+    model.save("Wonderland model.h5")
 
 
 
