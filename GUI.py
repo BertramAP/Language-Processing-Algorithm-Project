@@ -26,22 +26,43 @@ if gpus:
 config = tf.compat.v1.ConfigProto(allow_soft_placement=True)
 config.gpu_options.allow_growth = True
 session = tf.compat.v1.Session(config=config)
-#data indlæsning
-path = 'data.txt'
-text = open(path, "r", encoding='utf-8').read().lower()
-# Tokineser ordende
-tokenizer = RegexpTokenizer(r"\w+")
-tokens = tokenizer.tokenize(text)
+def sherlock_setup():
+    global n_words, unique_tokens, unique_token_index
+    #data indlæsning
+    path = 'data.txt'
+    text = open(path, "r", encoding='utf-8').read().lower()
+    # Tokineser ordende
+    tokenizer = RegexpTokenizer(r"\w+")
+    tokens = tokenizer.tokenize(text)
 
-# fjerner gentagende tokens
-unique_tokens = np.unique(tokens)
-# Mængden af kontext model har brug for
-n_words = 5
-#Definerer alle ord ai'en kender, i ud fra dataset, i form a tokens
-unique_token_index = {token: idx for idx, token in enumerate(unique_tokens)}
-#Slet data, der ikke længere skal bruges
-del path, text
+    # fjerner gentagende tokens
+    unique_tokens = np.unique(tokens)
+    # Mængden af kontext model har brug for
+    n_words = 5
+    #Definerer alle ord ai'en kender, i ud fra dataset, i form a tokens
+    unique_token_index = {token: idx for idx, token in enumerate(unique_tokens)}
+    #Slet data, der ikke længere skal bruges
+    del path, text
+def alice_and_sherlock_setup():
+    #data indlæsning
+    global n_words, unique_tokens, unique_token_index
+    path = 'data.txt'
+    text = open(path, "r", encoding='utf-8').read().lower()
 
+    # Tokineser ordende
+    tokenizer = RegexpTokenizer(r"\w+")
+    tokens = tokenizer.tokenize(text)
+    path = 'wonderland.txt'
+    text = open(path, "r", encoding='utf-8').read().lower()
+    newTokens = tokenizer.tokenize(text)
+    # fjerner gentagende tokens
+    unique_tokens = np.unique(tokens + newTokens)
+    # Mængden af kontext model har brug for
+    n_words = 5
+    #Definerer alle ord ai'en kender, i ud fra dataset, i form a tokens
+    unique_token_index = {token: idx for idx, token in enumerate(unique_tokens)}
+    #Slet data, der ikke længere skal bruges
+    del path, text
 
 class MainScreen(QMainWindow):
     def __init__(self):
@@ -237,6 +258,8 @@ def words_exist(text):
                 sentence = text[i+1:len(text)]
     print("Sentence2 is: ", sentence)
     return sentence
+
+sherlock_setup()
 
 app = QApplication(sys.argv)
 window = MainScreen()
