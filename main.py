@@ -54,6 +54,7 @@ if __name__ == '__main__':
 
     #Gemmer modellen som en fil
     model.save("Shelorck holmes model 1.h5")
+    model
 
 
 
