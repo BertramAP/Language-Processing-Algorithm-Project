@@ -202,12 +202,12 @@ class MainScreen(QMainWindow):
                 newModel.add(Activation("softmax"))
                 newModel.compile(loss="categorical_crossentropy", optimizer=RMSprop(learning_rate=0.01),
                                  metrics=["accuracy"])
-                newModel.fit(x, y, batch_size=32, epochs=3, shuffle=True)
+                newModel.fit(x, y, batch_size=16, epochs=3, shuffle=True)
                 self.model = newModel
                 del newModel
 
             if can_load_weights:
-                self.model.fit(x, y, batch_size=32, epochs=3, shuffle=True)
+                self.model.fit(x, y, batch_size=16, epochs=3, shuffle=True)
             print("Hej5")
 
 
