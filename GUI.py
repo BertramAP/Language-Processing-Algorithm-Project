@@ -1,19 +1,38 @@
-import sys
+import sys, os
 import numpy as np
+import tensorflow as tf
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QApplication, QFileDialog, QWidget, QGridLayout, QPushButton, QLabel, QTextEdit, QStackedWidget, QMainWindow, QToolBar
 from tensorflow import keras
 from keras import Model
+from keras.backend import set_session
 from keras.models import load_model, Sequential
 from keras.layers import Dense, LSTM, Embedding, Activation
 from keras.optimizers import RMSprop
 from nltk.tokenize import RegexpTokenizer
 
+print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
+#os.environ["TF_GPU_ALLOCATOR"] = "cuda_malloc_async"
+#print(os.getenv("TF_GPU_ALLOCATOR"))
+gpus = tf.config.experimental.list_physical_devices("GPU")
+"""
+if gpus:
+    try:
+        tf.config.experimental.set_virtual_device_configuration(
+            gpus[0],
+            [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=1024)])
+"""
+#setup af gpu vram
+config = tf.compat.v1.ConfigProto(allow_soft_placement=True)
+config.gpu_options.allow_growth = True
+session = tf.compat.v1.Session(config=config)
+#data indlæsning
 path = 'data.txt'
 text = open(path, "r", encoding='utf-8').read().lower()
 # Tokineser ordende
 tokenizer = RegexpTokenizer(r"\w+")
 tokens = tokenizer.tokenize(text)
+
 # fjerner gentagende tokens
 unique_tokens = np.unique(tokens)
 # Mængden af kontext model har brug for
@@ -29,7 +48,7 @@ class MainScreen(QMainWindow):
         super().__init__()
 
         self.model = load_model("Shelorck holmes model 1.h5")
-        self.modenON = True
+        self.modelON = True
 
         self.setWindowTitle('RNN')
 
@@ -65,6 +84,7 @@ class MainScreen(QMainWindow):
         self.filemenu = self.menubar.addMenu("file")
         self.filemenu.addAction("Vælg data", self.open_file_dialog)
 
+
     def ins_option_1(self):
         self.textArea.insertPlainText(" " + self.options[0])
 
@@ -76,12 +96,17 @@ class MainScreen(QMainWindow):
         self.textArea.insertPlainText(" " + self.options[2])
 
     def text_changed(self):
-        text = self.textArea.toPlainText().split(" ")
-        if text[len(text)-1].lower() in unique_token_index and self.modelON:
+        print("textArea: ", self.textArea.toPlainText())
+        print("textArea split: ", self.textArea.toPlainText().split(" ")[0])
+        new_list = [elem.replace("[", "").replace("]", "") for elem in self.textArea.toPlainText().split()]
+        print(new_list[0])
+        text = words_exist(self.textArea.toPlainText().lower().split(" "))
+
+        if self.modelON:
             print("nogen har trykket")
             #Tekst her
-            print(self.textArea.toPlainText())
-            possible = np.array([unique_tokens[idx] for idx in self.predict_next_word(self.textArea.toPlainText(), 3)])
+            print(self.textArea.toPlainText(), text)
+            possible = np.array([unique_tokens[idx] for idx in self.predict_next_word(text, 3)])
             possible = np.array_str(possible)
             words = []
             word = ""
@@ -151,6 +176,7 @@ class MainScreen(QMainWindow):
             print("Hej5")
 
             newModel.fit(x, y, batch_size=32, epochs=3, shuffle=True)
+
             self.model = newModel
             self.textArea.setText("")
             self.textArea.setReadOnly(False)
@@ -163,14 +189,16 @@ class MainScreen(QMainWindow):
 
 
     def predict_next_word(self, input_text, n_best):
-        input_text = input_text.lower()
         text = ""
-        if len(input_text.split(" ")) > 5:
+        print(len(input_text))
+        if len(input_text) > 5:
             input_text = input_text.split(" ")
             for i in range(len(input_text)-n_words, len(input_text)-1):
                 text = text + " " + input_text[i]
         else:
-            text = input_text
+            print("Hello")
+            for i in range(len(input_text) - 1):
+                text = text + " " + input_text[i]
 
         x = np.zeros((1, n_words, len(unique_tokens)))
         for i, word in enumerate(text.split()):
@@ -194,6 +222,21 @@ def update_tokens(text):
         return True
     else:
         return False
+def words_exist(text):
+    print("Whole text is: ", text)
+    if len(text) > n_words:
+        sentence = text[len(text) - n_words:len(text)]
+        for i in range(len(text) - n_words, len(text)):
+            if text[i] not in unique_tokens:
+                sentence = text[i+1:len(text)]
+    else:
+        sentence = text
+        for i in range(len(text)):
+            if text[i] not in unique_tokens:
+                print(text[i])
+                sentence = text[i+1:len(text)]
+    print("Sentence2 is: ", sentence)
+    return sentence
 
 app = QApplication(sys.argv)
 window = MainScreen()

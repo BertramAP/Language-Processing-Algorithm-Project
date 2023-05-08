@@ -60,3 +60,4 @@ if can_load_weights:
     newModel.load_weights("./checkpoints")
 
 newModel.fit(x, y, batch_size=128, epochs=3, shuffle=True)
+model.save("Sherlock & Wonderland model.h5")
