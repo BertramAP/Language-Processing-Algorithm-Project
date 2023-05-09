@@ -1,20 +1,22 @@
 import sys
 import numpy as np
 import tensorflow as tf
-from PyQt6.QtWidgets import QApplication, QFileDialog, QWidget, QGridLayout, QPushButton, QLabel, QTextEdit, QStackedWidget, QMainWindow, QToolBar
+from PyQt6.QtWidgets import QApplication, QFileDialog, QWidget, QGridLayout, QPushButton, QTextEdit, QMainWindow
 from keras.models import load_model, Sequential
-from keras.layers import Dense, LSTM, Embedding, Activation
+from keras.layers import Dense, LSTM, Activation
 from keras.optimizers import RMSprop
 from nltk.tokenize import RegexpTokenizer
 
 print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
 #os.environ["TF_GPU_ALLOCATOR"] = "cuda_malloc_async"
 #print(os.getenv("TF_GPU_ALLOCATOR"))
+
 gpus = tf.config.experimental.list_physical_devices("GPU")
 #setup af gpu vram
 config = tf.compat.v1.ConfigProto(allow_soft_placement=True)
 config.gpu_options.allow_growth = True
 session = tf.compat.v1.Session(config=config)
+
 def sherlock_setup():
     global n_words, unique_tokens, unique_token_index, tokenizer, tokens
     #data indlæsning
@@ -66,7 +68,6 @@ class MainScreen(QMainWindow):
         self.textArea = QTextEdit()
         self.textArea.setReadOnly(False)
         self.textArea.textChanged.connect(self.text_changed)
-        #self.textArea.setLineWrapMode(QTextEdit.wrap)
 
         self.buttons = [QPushButton("Tryk her 1"),
                         QPushButton("Tryk her 2"),
@@ -97,7 +98,6 @@ class MainScreen(QMainWindow):
         self.textArea.insertPlainText(" " + self.options[0])
 
     def ins_option_2(self):
-        print(self.textArea.toPlainText() + " " + self.options[1])
         self.textArea.insertPlainText(" " + self.options[1])
 
     def ins_option_3(self):
@@ -110,8 +110,8 @@ class MainScreen(QMainWindow):
         if self.modelON:
             print("nogen har trykket")
             #Tekst her
-            print(self.textArea.toPlainText(), text)
-            possible = np.array([unique_tokens[idx] for idx in self.predict_next_word(text, 3)])
+            print(self.textArea.toPlainText(), type(text))
+            possible = np.array([unique_tokens[idx] for idx in self.predict_next_word(text.split(" "), 3)])
             possible = np.array_str(possible)
             words = []
             word = ""
@@ -142,7 +142,7 @@ class MainScreen(QMainWindow):
         else:
             sentence = ""
             for i in range(len(text)):
-                print(f"{text[i]} in unique_tokens? ", text[i] in unique_token_index)
+                print(f"{text[i][0]} in unique_tokens? ", text[i] in unique_token_index)
                 if text[i] in unique_token_index:
                     sentence = sentence + " " + text[i]
                 elif text[i] not in unique_token_index and not i == len(text) - 1:
@@ -150,7 +150,7 @@ class MainScreen(QMainWindow):
                 else:
                     sentence = sentence
             print(sentence)
-        print("Sentence2 is: ", sentence)
+        print("Sentence2 is: ", type(sentence))
         return sentence
 
     def open_file_dialog(self):
@@ -229,7 +229,8 @@ class MainScreen(QMainWindow):
             for i in range(len(input_text)-n_words, len(input_text)-1):
                 text = text + " " + input_text[i]
         else:
-            for i in range(len(input_text) - 1):
+            for i in range(len(input_text)):
+                print("I am: ", input_text[i])
                 text = text + " " + input_text[i]
         print(text)
         X = np.zeros((1, n_words, len(unique_tokens)))

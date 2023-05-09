@@ -5,15 +5,21 @@ from keras.layers import Dense, LSTM, Activation
 from keras.optimizers import RMSprop
 from nltk.tokenize import RegexpTokenizer
 from tensorflow.python.client import device_lib
+
 print("TensorFlow version:", tf.__version__)
 print(device_lib.list_local_devices())
 print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
+
+#setup af gpu vram
+config = tf.compat.v1.ConfigProto(allow_soft_placement=True)
+config.gpu_options.allow_growth = True
+session = tf.compat.v1.Session(config=config)
 
 n_words = 5
 input_words = []
 next_words = []
 
-path = 'wonderland.txt'
+path = 'data.txt'
 text = open(path, "r", encoding='utf-8').read().lower()
 print('length of the corpus is: :', len(text))
 # Tokineser ordende
@@ -43,7 +49,7 @@ model.add(LSTM(128, input_shape=(n_words, len(unique_tokens))))
 model.add(Dense(len(unique_tokens)))
 model.add(Activation("softmax"))
 model.compile(loss="categorical_crossentropy", optimizer=RMSprop(learning_rate=0.01), metrics=["accuracy"])
-model.fit(x, y, batch_size=128, epochs=10, shuffle=True, validation_split=0.05)
+model.fit(x, y, batch_size=32, epochs=10, shuffle=True, validation_split=0.05)
 
 #Gemmer modellen som en fil
 model.save("Wonderland model.h5")
