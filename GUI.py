@@ -32,27 +32,10 @@ def sherlock_setup():
     n_words = 5
     #Definerer alle ord ai'en kender, i ud fra dataset, i form a tokens
     unique_token_index = {token: idx for idx, token in enumerate(unique_tokens)}
+
     #Slet data, der ikke længere skal bruges
     del path, text
-"""
-def wonderland_setup():
-    #data indlæsning
-    global n_words, unique_tokens, unique_token_index, tokenizer, tokens
-    path = 'wonderland.txt'
-    text = open(path, "r", encoding='utf-8').read().lower()
-    tokenizer = RegexpTokenizer(r"\w+")
-    tokens = tokenizer.tokenize(text)
-    #definerer mængden af tokens
-    unique_tokens = np.unique(tokens)
-    print(len(unique_tokens))
-    # Mængden af kontext model har brug for
-    tokens = tokens
-    n_words = 5
-    #Definerer alle ord ai'en kender, i ud fra dataset, i form a tokens
-    unique_token_index = {token: idx for idx, token in enumerate(unique_tokens)}
-    #Slet data, der ikke længere skal bruges
-    del path, text
-"""
+
 class MainScreen(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -95,24 +78,34 @@ class MainScreen(QMainWindow):
 
 
     def ins_option_1(self):
-        self.textArea.insertPlainText(" " + self.options[0])
+        if self.textArea.toPlainText()[-1].isspace():
+            self.textArea.insertPlainText(self.options[0])
+        else:
+            self.textArea.insertPlainText(" " + self.options[0])
 
     def ins_option_2(self):
-        self.textArea.insertPlainText(" " + self.options[1])
-
+        if self.textArea.toPlainText()[-1].isspace():
+            self.textArea.insertPlainText(self.options[1])
+        else:
+            self.textArea.insertPlainText(" " + self.options[1])
     def ins_option_3(self):
-        self.textArea.insertPlainText(" " + self.options[2])
-
+        if self.textArea.toPlainText()[-1].isspace():
+            self.textArea.insertPlainText(self.options[2])
+        else:
+            self.textArea.insertPlainText(" " + self.options[2])
     def text_changed(self):
         print("NO")
-        text = self.words_exist(self.textArea.toPlainText().lower().split(" "))
 
         if self.modelON:
+            text = self.words_exist(self.textArea.toPlainText().lower().split(" "))
             print("nogen har trykket")
             #Tekst her
             print(self.textArea.toPlainText(), type(text))
-            possible = np.array([unique_tokens[idx] for idx in self.predict_next_word(text.split(" "), 3)])
+            dot = self.predict_next_word(text, 3)
+            print("DOT: ", dot)
+            possible = np.array([unique_tokens[idx] for idx in dot])
             possible = np.array_str(possible)
+            print("Possible: ", possible)
             words = []
             word = ""
             for i in range(len(possible)):
@@ -130,10 +123,10 @@ class MainScreen(QMainWindow):
 
     def words_exist(self, text):
         print(text)
-        print("Whole text is: ", text)
+        print("Whole text is: ", len(text))
         if len(text) > n_words:
             sentence = ""
-            for i in range(len(text)-n_words, len(text)):
+            for i in range(len(text)-n_words, len(text) - 1):
                 print(f"{text[i]} in unique_tokens? ", text[i] in unique_token_index)
                 if text[i] in unique_tokens:
                     sentence = sentence + " " + text[i]
@@ -142,7 +135,7 @@ class MainScreen(QMainWindow):
         else:
             sentence = ""
             for i in range(len(text)):
-                print(f"{text[i][0]} in unique_tokens? ", text[i] in unique_token_index)
+                print(f"{text[i]} in unique_tokens? ", text[i] in unique_token_index)
                 if text[i] in unique_token_index:
                     sentence = sentence + " " + text[i]
                 elif text[i] not in unique_token_index and not i == len(text) - 1:
@@ -150,7 +143,7 @@ class MainScreen(QMainWindow):
                 else:
                     sentence = sentence
             print(sentence)
-        print("Sentence2 is: ", type(sentence))
+        #print("Sentence2 is: ", len(sentence.spilt("")))
         return sentence
 
     def open_file_dialog(self):
@@ -222,17 +215,7 @@ class MainScreen(QMainWindow):
 
 
     def predict_next_word(self, input_text, n_best):
-        text = ""
-        print(len(input_text))
-        if len(input_text) > 5:
-            input_text = input_text.split(" ")
-            for i in range(len(input_text)-n_words, len(input_text)-1):
-                text = text + " " + input_text[i]
-        else:
-            for i in range(len(input_text)):
-                print("I am: ", input_text[i])
-                text = text + " " + input_text[i]
-        print(text)
+        text = input_text
         X = np.zeros((1, n_words, len(unique_tokens)))
         for i, word in enumerate(text.split()):
             X[0, i, unique_token_index[word]] = 1
@@ -257,7 +240,6 @@ def update_tokens(text):
         return False
 
 sherlock_setup()
-
 
 app = QApplication(sys.argv)
 window = MainScreen()

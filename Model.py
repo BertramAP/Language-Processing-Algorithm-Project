@@ -45,14 +45,14 @@ for i, words in enumerate(input_words):
     y[i, unique_token_index[next_words[i]]] = 1
 
 model = Sequential()
-model.add(LSTM(128, input_shape=(n_words, len(unique_tokens))))
+model.add(LSTM(256, input_shape=(n_words, len(unique_tokens))))
 model.add(Dense(len(unique_tokens)))
 model.add(Activation("softmax"))
 model.compile(loss="categorical_crossentropy", optimizer=RMSprop(learning_rate=0.01), metrics=["accuracy"])
 model.fit(x, y, batch_size=32, epochs=10, shuffle=True, validation_split=0.05)
 
 #Gemmer modellen som en fil
-model.save("Wonderland model.h5")
+#model.save("Wonderland model.h5")
 
 
 

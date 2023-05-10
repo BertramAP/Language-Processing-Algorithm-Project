@@ -33,8 +33,8 @@ def update_tokens(text):
 
 model = load_model("Shelorck holmes model 1.h5")
 can_load_weights = update_tokens(text)
-if can_load_weights:
-    model.save_weights("./checkpoints")
+#if can_load_weights:
+#    model.save_weights("./checkpoints")
 
 input_words = []
 next_words = []
@@ -50,13 +50,19 @@ for i, words in enumerate(input_words):
     for j, word in enumerate(words):
         x[i, j, unique_token_index[word]] = 1
     y[i, unique_token_index[next_words[i]]] = 1
+"""
 newModel = Sequential()
 newModel.add(LSTM(128, input_shape=(n_words, len(unique_tokens))))
 newModel.add(Dense(len(unique_tokens)))
 newModel.add(Activation("softmax"))
 newModel.compile(loss="categorical_crossentropy", optimizer=RMSprop(learning_rate=0.01), metrics=["accuracy"])
-if can_load_weights:
-    newModel.load_weights("./checkpoints")
+"""
 
-newModel.fit(x, y, batch_size=128, epochs=3, shuffle=True)
-model.save("Sherlock & Wonderland model.h5")
+model.layers[1](keras.Input((n_words, len(unique_tokens))))
+model.layers[2](keras.Input(len(unique_tokens)))
+
+#if can_load_weights:
+#    newModel.load_weights("./checkpoints")
+
+model.fit(x, y, batch_size=128, epochs=3, shuffle=True)
+#model.save("Sherlock & Wonderland model.h5")
